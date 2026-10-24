@@ -327,10 +327,15 @@ function embed(p){
   if(p.placeholder)return'<p>This is a labeled placeholder, not real work. Add your video to <code>PROJECTS</code> and it will play here.</p>';
   if(p.type==="youtube")return`<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(p.src)}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="${esc(p.title)}"></iframe>`;
   if(p.type==="vimeo")return`<iframe src="https://player.vimeo.com/video/${encodeURIComponent(p.src)}?autoplay=1" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="${esc(p.title)}"></iframe>`;
-  return`<video src="${esc(p.src)}" ${p.thumb?`poster="${esc(p.thumb)}"`:""} controls autoplay playsinline></video>`;
+  return`<video src="${esc(p.src)}" ${p.thumb?`poster="${esc(p.thumb)}"`:""} controls playsinline preload="auto"></video>`;
 }
 function open_(i){cur=(i+list.length)%list.length;const p=list[cur];
   $("#dt").textContent=p.title;$("#dd").textContent=p.description||"";$("#stage").innerHTML=embed(p);
+  const v=$("#stage video");
+  if(v){
+    v.addEventListener("error",()=>{$("#stage").innerHTML='<p>This video could not be loaded (error '+(v.error?v.error.code:"?")+'). <a style="color:var(--gold2);text-decoration:underline" href="'+esc(p.src)+'" target="_blank" rel="noopener">Open the video file directly</a>.</p>'});
+    const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{v.muted=true;const q=v.play();if(q&&q.catch)q.catch(()=>{})});
+  }
   if(!dlg.open)dlg.showModal()}
 function close_(){dlg.close();$("#stage").innerHTML=""}
 $("#grid").onclick=e=>{const c=e.target.closest(".card");if(c)open_(+c.dataset.i)};
